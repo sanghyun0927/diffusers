@@ -154,6 +154,13 @@ def parse_args(input_args=None):
         help="The column of the dataset containing a caption or a list of captions.",
     )
     parser.add_argument(
+        "--with_prior_preservation",
+        default=False,
+        action="store_true",
+        help="Flag to add prior preservation loss.",
+    )
+    parser.add_argument("--prior_loss_weight", type=float, default=1.0, help="The weight of prior preservation loss.")
+    parser.add_argument(
         "--max_train_samples",
         type=int,
         default=None,
@@ -608,16 +615,24 @@ def main(args):
                     f"Caption column `{caption_column}` should contain either strings or lists of strings."
                 )
         inputs = tokenizer(
-            captions, max_length=tokenizer.model_max_length, padding="max_length", truncation=True, return_tensors="pt"
+            captions, max_length=tokenizer.model_max_length,
+            padding="max_length",
+            truncation=True,
+            return_tensors="pt"
         )
         return inputs.input_ids
 
     # Preprocessing the datasets.
-    train_transforms = transforms.Compose(
+    train_transforms_resize_and_crop = transforms.Compose(
         [
             transforms.Resize(args.resolution, interpolation=transforms.InterpolationMode.BILINEAR),
             transforms.CenterCrop(args.resolution) if args.center_crop else transforms.RandomCrop(args.resolution),
             transforms.RandomHorizontalFlip() if args.random_flip else transforms.Lambda(lambda x: x),
+        ]
+    )
+
+    train_transforms = transforms.Compose(
+        [
             transforms.ToTensor(),
             transforms.Normalize([0.5], [0.5]),
         ]
@@ -625,7 +640,10 @@ def main(args):
 
     def preprocess_train(examples):
         images = [image.convert("RGB") for image in examples[image_column]]
-        examples["pixel_values"] = [train_transforms(image) for image in images]
+        sample_images = [train_transforms_resize_and_crop(image) for image in images]
+
+        examples["PIL_images"] = sample_images
+        examples["pixel_values"] = [train_transforms(image) for image in sample_images]
         examples["input_ids"] = tokenize_captions(examples)
         return examples
 
@@ -636,8 +654,6 @@ def main(args):
         train_dataset = dataset["train"].with_transform(preprocess_train)
 
     def collate_fn(examples):
-        input_ids = [example["instance_prompt_ids"] for example in examples]
-        pixel_values = [example["instance_images"] for example in examples]
 
         # Concat class and instance examples for prior preservation.
         # We do this to avoid doing two forward passes.
@@ -668,10 +684,10 @@ def main(args):
                 masks.append(mask)
                 masked_images.append(masked_image)
 
-        pixel_values = torch.stack(pixel_values)
+        pixel_values = torch.stack([example["pixel_values"] for example in examples])
         pixel_values = pixel_values.to(memory_format=torch.contiguous_format).float()
 
-        input_ids = tokenizer.pad({"input_ids": input_ids}, padding=True, return_tensors="pt").input_ids
+        input_ids = torch.stack([example["input_ids"] for example in examples])
         masks = torch.stack(masks)
         masked_images = torch.stack(masked_images)
         batch = {"input_ids": input_ids, "pixel_values": pixel_values, "masks": masks, "masked_images": masked_images}
