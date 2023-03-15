@@ -102,6 +102,13 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
     return mask
 
 
+def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
+    file_name = text.split(" ")[0] + '_mask.png'
+    mask = Image.open(os.path.join(mask_dir, file_name))
+
+    return train_transforms_resize_and_crop(mask)
+
+
 def parse_args(input_args=None):
     parser = argparse.ArgumentParser(description="Simple example of a training script.")
     parser.add_argument(
@@ -140,6 +147,16 @@ def parse_args(input_args=None):
         default=None,
         help=(
             "A folder containing the training data. Folder contents must follow the structure described in"
+            " https://huggingface.co/docs/datasets/image_dataset#imagefolder. In particular, a `metadata.jsonl` file"
+            " must exist to provide the captions for the images. Ignored if `dataset_name` is specified."
+        ),
+    )
+    parser.add_argument(
+        "--mask_data_dir",
+        type=str,
+        default=None,
+        help=(
+            "A folder containing the mask data. Folder contents must follow the structure described in"
             " https://huggingface.co/docs/datasets/image_dataset#imagefolder. In particular, a `metadata.jsonl` file"
             " must exist to provide the captions for the images. Ignored if `dataset_name` is specified."
         ),
@@ -193,7 +210,7 @@ def parse_args(input_args=None):
     )
     parser.add_argument(
         "--center_crop",
-        default=False,
+        default=True,
         action="store_true",
         help=(
             "Whether to center crop the input images to the resolution. If not set, the images will be randomly"
@@ -665,9 +682,10 @@ def main(args):
         masks = []
         masked_images = []
         for example in examples:
-            pil_image = example["PIL_images"]
+            pil_image = example['PIL_images']
+            input_id = example["input_ids"]
             # generate a random mask
-            mask = random_mask(pil_image.size, 1, False)
+            mask = matched_mask(input_id, args.mask_data_dir, train_transforms_resize_and_crop)
             # prepare mask and masked image
             mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
 
