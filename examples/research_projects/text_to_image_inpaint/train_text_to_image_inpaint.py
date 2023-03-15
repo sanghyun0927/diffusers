@@ -622,6 +622,7 @@ def main(args):
     def tokenize_captions(examples, is_train=True):
         captions = []
         for caption in examples[caption_column]:
+            caption = 'in' + caption.split(" in")[-1]
             if isinstance(caption, str):
                 captions.append(caption)
             elif isinstance(caption, (list, np.ndarray)):
@@ -683,9 +684,9 @@ def main(args):
         masked_images = []
         for example in examples:
             pil_image = example['PIL_images']
-            input_id = example["input_ids"]
+            caption = example[caption_column]
             # generate a random mask
-            mask = matched_mask(input_id, args.mask_data_dir, train_transforms_resize_and_crop)
+            mask = matched_mask(caption, args.mask_data_dir, train_transforms_resize_and_crop)
             # prepare mask and masked image
             mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
 
