@@ -106,8 +106,8 @@ def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split(" ")[0] + '_mask.png'
     mask_path = os.path.join(mask_dir, file_name)
     mask_array = np.array(Image.open(mask_path).convert('L'))
-    print(np.unique(mask_array))
-    mask_array = np.where(mask_array<128, 9, 255)
+    print(mask_array.shape)
+    mask_array = np.where(mask_array<128, 0, 255).astype('uint8')
     mask = Image.fromarray(mask_array)
 
     return train_transforms_resize_and_crop(mask)
