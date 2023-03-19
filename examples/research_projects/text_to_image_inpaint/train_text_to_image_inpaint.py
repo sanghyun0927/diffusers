@@ -107,10 +107,7 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
 def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split(" ")[0] + '_mask.png'
     mask_path = os.path.join(mask_dir, file_name)
-    mask_array = np.array(Image.open(mask_path).convert('L'))
-    print(mask_array.shape)
-    mask_array = np.where(mask_array<128, 0, 255).astype('uint8')
-    mask = Image.fromarray(mask_array)
+    mask = Image.open(mask_path).convert('L')
 
     return train_transforms_resize_and_crop(mask)
 
