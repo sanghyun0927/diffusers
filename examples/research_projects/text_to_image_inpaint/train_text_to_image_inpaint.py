@@ -62,12 +62,10 @@ logger = get_logger(__name__, log_level="INFO")
 
 def prepare_mask_and_masked_image(image, mask):
     image = np.array(image.convert("RGB"))
-    print(image.shape)
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
 
     mask = np.array(mask.convert("L"))
-    print(mask.shape)
     mask = mask.astype(np.float32) / 255.0
     mask = mask[None, None]
     mask[mask < 0.5] = 0
@@ -106,6 +104,7 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
 
 def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split(" ")[0] + '_mask.png'
+    print(file_name)
     mask_path = os.path.join(mask_dir, file_name)
     mask = Image.open(mask_path).convert('L')
 
@@ -626,6 +625,7 @@ def main(args):
         captions = []
         for caption in examples[caption_column]:
             caption = 'in' + caption.split(" in")[-1]
+            print(caption)
             if isinstance(caption, str):
                 captions.append(caption)
             elif isinstance(caption, (list, np.ndarray)):
