@@ -104,6 +104,7 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
 
 def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split(" ")[0] + '_mask.png'
+    print(os.path.join(mask_dir, file_name))
     mask = Image.open(os.path.join(mask_dir, file_name))
 
     return train_transforms_resize_and_crop(mask)
