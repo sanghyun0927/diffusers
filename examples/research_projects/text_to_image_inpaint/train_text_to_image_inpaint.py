@@ -60,14 +60,14 @@ check_min_version("0.15.0.dev0")
 logger = get_logger(__name__, log_level="INFO")
 
 
-def prepare_mask_and_masked_image(image, mask):
+def prepare_mask_and_masked_image(image, mask, n):
     print(np.shape(image), np.shape(mask))
-    image.convert("RGB").show()
+    image.convert("RGB").save(f'image{n}.png')
     image = np.array(image.convert("RGB"))
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
 
-    mask.convert("L").show()
+    mask.convert("L").save(f'mask{n}.png')
     mask = np.array(mask.convert("L"))
     mask = mask.astype(np.float32) / 255.0
     mask = mask[None, None]
@@ -667,12 +667,12 @@ def main(args):
 
         masks = []
         masked_images = []
-        for example in examples:
+        for idx, example in enumerate(examples):
             pil_image = example["PIL_images"]
             # generate a random mask
             mask = random_mask(pil_image.size, 1, False)
             # prepare mask and masked image
-            mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
+            mask, masked_image = prepare_mask_and_masked_image(pil_image, mask, idx)
 
             masks.append(mask)
             masked_images.append(masked_image)
