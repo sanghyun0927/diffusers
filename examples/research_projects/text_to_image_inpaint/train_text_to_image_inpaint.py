@@ -103,7 +103,7 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
 
 
 def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
-    file_name = text.split(" ")[0] + '_mask.png'
+    file_name = text.split("car")[0] + '_mask.png'
     print(file_name)
     mask_path = os.path.join(mask_dir, file_name)
     mask = Image.open(mask_path).convert('L')
@@ -624,7 +624,7 @@ def main(args):
     def tokenize_captions(examples, is_train=True):
         captions = []
         for caption in examples[caption_column]:
-            caption = 'in' + caption.split(" in")[-1]
+            caption = 'empty car ' + caption.split("car ")[-1]
             print(caption)
             if isinstance(caption, str):
                 captions.append(caption)
