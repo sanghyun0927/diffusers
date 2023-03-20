@@ -62,12 +62,20 @@ logger = get_logger(__name__, log_level="INFO")
 
 def prepare_mask_and_masked_image(image, mask, n):
     print(np.shape(image), np.shape(mask))
+<<<<<<< HEAD
     image.convert("RGB").save(f'./mask_data/image{n}.png')
+=======
+    image.convert("RGB").save(f'image{n}.png')
+>>>>>>> 8f1585d561b23c6e95af38b1f6c8353cf7cb9b9d
     image = np.array(image.convert("RGB"))
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
 
+<<<<<<< HEAD
     mask.convert("L").save(f'./mask_data/mask{n}.png')
+=======
+    mask.convert("L").save(f'mask{n}.png')
+>>>>>>> 8f1585d561b23c6e95af38b1f6c8353cf7cb9b9d
     mask = np.array(mask.convert("L"))
     mask = mask.astype(np.float32) / 255.0
     mask = mask[None, None]
