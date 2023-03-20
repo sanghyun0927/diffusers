@@ -64,7 +64,6 @@ def prepare_mask_and_masked_image(image, mask):
     print(np.shape(image), np.shape(mask))
     image.convert("RGB").show()
     image = np.array(image.convert("RGB"))
-    image.show()
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
 
