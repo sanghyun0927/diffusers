@@ -627,7 +627,7 @@ def main(args):
     def tokenize_captions(examples, is_train=True):
         captions = []
         for caption in examples[caption_column]:
-            caption = 'empty car ' + caption.split("car ")[-1]
+            caption = 'empty photozone'
             print(caption)
             if isinstance(caption, str):
                 captions.append(caption)
