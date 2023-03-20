@@ -608,6 +608,7 @@ def main(args):
     def tokenize_captions(examples, is_train=True):
         captions = []
         for caption in examples[caption_column]:
+            print(caption, type(caption))
             if isinstance(caption, str):
                 captions.append(caption)
             elif isinstance(caption, (list, np.ndarray)):
