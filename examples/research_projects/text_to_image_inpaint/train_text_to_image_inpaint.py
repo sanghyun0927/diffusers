@@ -61,6 +61,7 @@ logger = get_logger(__name__, log_level="INFO")
 
 
 def prepare_mask_and_masked_image(image, mask, n):
+    print(n)
     image.convert("RGB").save(f'./image_data/{n}.png')
     image = np.array(image.convert("RGB"))
     image = image[None].transpose(0, 3, 1, 2)
@@ -687,13 +688,13 @@ def main(args):
 
         masks = []
         masked_images = []
-        for example in examples:
+        for idx, example in enumerate(examples):
             pil_image = example['PIL_images']
             caption = example[caption_column]
             # generate a random mask
             mask = matched_mask(caption, args.mask_data_dir, train_transforms_resize_and_crop)
             # prepare mask and masked image
-            mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
+            mask, masked_image = prepare_mask_and_masked_image(pil_image, mask, idx)
 
             masks.append(mask)
             masked_images.append(masked_image)
