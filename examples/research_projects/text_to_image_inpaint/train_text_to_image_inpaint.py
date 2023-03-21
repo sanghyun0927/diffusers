@@ -24,6 +24,8 @@ from typing import Optional
 import accelerate
 import datasets
 import numpy as np
+import pandas as pd
+import cv2
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
@@ -106,8 +108,17 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
 
 def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split("car")[0] + '_mask.png'
+    
+    df = pd.read_csv("/content/drive/MyDrive/height_idx.csv"
+    y_idx = df[df['file_name'] == text.split("car")[0]]['high']
+                     
     mask_path = os.path.join(mask_dir, file_name)
-    mask = Image.open(mask_path).convert('L')
+    mask_array = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
+    
+    full_array = np.ones((512,512), dtype='uint8') * 255
+    full_array[y_idx:(y_idx+mask_array.shape[0]), :] = mask_array[:, :512]
+    mask = Image.from_array(full_array)
+    print("/n done /n")
 
     return train_transforms_resize_and_crop(mask)
 
