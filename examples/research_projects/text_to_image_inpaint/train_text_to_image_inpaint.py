@@ -110,7 +110,7 @@ def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split("car")[0] + '_mask.png'
     
     df = pd.read_csv("/content/drive/MyDrive/height_idx.csv"
-    y_idx = df[df['file_name'] == text.split("car")[0]]['high']
+    y_idx = df[df['file_name'] == text.split("car")[0].astype('uint8')]['high']
                      
     mask_path = os.path.join(mask_dir, file_name)
     mask_array = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
