@@ -36,6 +36,7 @@ from huggingface_hub import HfFolder, Repository, create_repo, whoami
 from packaging import version
 from PIL import Image, ImageDraw
 from torch.utils.data import Dataset
+import torchvision
 from torchvision import transforms
 from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizer
@@ -61,13 +62,10 @@ logger = get_logger(__name__, log_level="INFO")
 
 
 def prepare_mask_and_masked_image(image, mask, n):
-    print(n)
-    image.convert("RGB").save(f'./image_data/{n}.png')
     image = np.array(image.convert("RGB"))
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
-
-    mask.convert("L").save(f'./image_data/{n}_mask.png')
+    
     mask = np.array(mask.convert("L"))
     mask = mask.astype(np.float32) / 255.0
     mask = mask[None, None]
@@ -76,6 +74,7 @@ def prepare_mask_and_masked_image(image, mask, n):
     mask = torch.from_numpy(mask)
 
     masked_image = image * (mask < 0.5)
+    torchvision.utils.save_image(masked_image, f'./mask_data/mask{n}.png')
 
     return mask, masked_image
 
@@ -107,7 +106,6 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
 
 def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split("car")[0] + '_mask.png'
-    print(file_name)
     mask_path = os.path.join(mask_dir, file_name)
     mask = Image.open(mask_path).convert('L')
 
