@@ -118,7 +118,6 @@ def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     full_array = np.ones((512,512), dtype='uint8') * 255
     full_array[y_idx:(y_idx+mask_array.shape[0]), :] = mask_array[:, :512]
     mask = Image.from_array(full_array)
-    print("/n done /n")
 
     return train_transforms_resize_and_crop(mask)
 
