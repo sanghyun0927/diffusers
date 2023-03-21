@@ -71,11 +71,11 @@ def prepare_mask_and_masked_image(image, mask, n):
     mask = np.array(mask.convert("L"))
     mask = mask.astype(np.float32) / 255.0
     mask = mask[None, None]
-    mask[mask < 0.5] = 1
-    mask[mask >= 0.5] = 0
+    mask[mask < 0.5] = 0
+    mask[mask >= 0.5] = 1
     mask = torch.from_numpy(mask)
 
-    masked_image = image * (mask < 0.5)
+    masked_image = image * mask
     torchvision.utils.save_image(masked_image, f'./mask_data/mask{n}.png')
 
     return mask, masked_image
@@ -110,14 +110,16 @@ def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split("car")[0] + '_mask.png'
     
     df = pd.read_csv("/content/drive/MyDrive/height_idx.csv")
-    y_idx = df[df['file_name'] == int(text.split("car")[0])]['high']
-                     
+    y_idx = int(df[df['file_name'] == int(text.split("car")[0])]['high']) 
+    y_idx2 = int(df[df['file_name'] == int(text.split("car")[0])]['low'])  
+
     mask_path = os.path.join(mask_dir, file_name)
-    mask_array = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
-    
+    mask_array = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+
     full_array = np.ones((512,512), dtype='uint8') * 255
-    full_array[y_idx:(y_idx+mask_array.shape[0]), :] = mask_array[:, :512]
-    mask = Image.from_array(full_array)
+    full_array[y_idx:y_idx2, :] = mask_array[y_idx:y_idx2, :]
+    mask = Image.fromarray(full_array)
+    mask.save(file_name.split("/")[-1])
 
     return train_transforms_resize_and_crop(mask)
 
