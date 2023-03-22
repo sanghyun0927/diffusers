@@ -62,13 +62,10 @@ logger = get_logger(__name__, log_level="INFO")
 
 
 def prepare_mask_and_masked_image(image, mask, n):
-    print(np.shape(image), np.shape(mask))
-    image.convert("RGB").save(f'./mask_data/image{n}.png')
     image = np.array(image.convert("RGB"))
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
-
-    mask.convert("L").save(f'./mask_data/mask{n}.png')
+    
     mask = np.array(mask.convert("L"))
     mask = mask.astype(np.float32) / 255.0
     mask = mask[None, None]
@@ -102,7 +99,7 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
             (center[0] - size[0] // 2, center[1] - size[1] // 2, center[0] + size[0] // 2, center[1] + size[1] // 2),
             fill=255,
         )
-
+    mask.save(f'./mask_data/mask.png')
     return mask
 
 
