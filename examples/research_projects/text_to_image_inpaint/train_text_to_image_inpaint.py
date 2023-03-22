@@ -76,7 +76,7 @@ def prepare_mask_and_masked_image(image, mask, n):
     mask = torch.from_numpy(mask)
 
     masked_image = image * mask
-    torchvision.utils.save_image(masked_image, f'./image_data/10000_msk.png')
+    torchvision.utils.save_image(masked_image, 'mask.png')
 
     return mask, masked_image
 
