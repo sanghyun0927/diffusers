@@ -63,11 +63,11 @@ check_min_version("0.15.0.dev0")
 logger = get_logger(__name__, log_level="INFO")
 
 
-def prepare_mask_and_masked_image(image, mask, n):
+def prepare_mask_and_masked_image(image, mask):
     image = np.array(image.convert("RGB"))
     image = image[None].transpose(0, 3, 1, 2)
     image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
-    
+
     mask = np.array(mask.convert("L"))
     mask = mask.astype(np.float32) / 255.0
     mask = mask[None, None]
@@ -75,9 +75,8 @@ def prepare_mask_and_masked_image(image, mask, n):
     mask[mask >= 0.5] = 1
     mask = torch.from_numpy(mask)
 
-    masked_image = image * mask
+    masked_image = image * (mask < 0.5)
     torchvision.utils.save_image(masked_image, 'mask.png')
-
     return mask, masked_image
 
 
@@ -108,20 +107,10 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
 
 def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split("car")[0] + '_mask.png'
-    
-    df = pd.read_csv("/content/drive/MyDrive/height_idx.csv")
-    y_idx = int(df[df['file_name'] == int(text.split("car")[0])]['high']) 
-    y_idx2 = int(df[df['file_name'] == int(text.split("car")[0])]['low'])  
+    mask = Image.open(file_name).convert("L")
+    mask.save('./image_data/' + file_name.split("/")[-1])
 
-    mask_path = os.path.join(mask_dir, file_name)
-    mask_array = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
-
-    full_array = np.ones((512,512), dtype='uint8') * 255
-    full_array[y_idx:y_idx2, :] = mask_array[y_idx:y_idx2, :]
-    mask = Image.fromarray(full_array)
-    ImageOps.invert(mask).save('./image_data/' + file_name.split("/")[-1])
-
-    return train_transforms_resize_and_crop(ImageOps.invert(mask))
+    return train_transforms_resize_and_crop(mask)
 
 
 def parse_args(input_args=None):
@@ -704,7 +693,7 @@ def main(args):
             # generate a random mask
             mask = matched_mask(caption, args.mask_data_dir, train_transforms_resize_and_crop)
             # prepare mask and masked image
-            mask, masked_image = prepare_mask_and_masked_image(pil_image, mask, idx)
+            mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
 
             masks.append(mask)
             masked_images.append(masked_image)
