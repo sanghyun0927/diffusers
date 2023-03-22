@@ -107,7 +107,7 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
 
 def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     file_name = text.split("car")[0] + '_mask.png'
-    mask = Image.open(file_name).convert("L")
+    mask = Image.open('./mask_data/' + file_name).convert("L")
     mask.save('./image_data/' + file_name.split("/")[-1])
 
     return train_transforms_resize_and_crop(mask)
