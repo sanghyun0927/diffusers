@@ -36,7 +36,7 @@ from accelerate.utils import ProjectConfiguration, set_seed
 from datasets import load_dataset
 from huggingface_hub import HfFolder, Repository, create_repo, whoami
 from packaging import version
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 from torch.utils.data import Dataset
 import torchvision
 from torchvision import transforms
@@ -76,7 +76,7 @@ def prepare_mask_and_masked_image(image, mask, n):
     mask = torch.from_numpy(mask)
 
     masked_image = image * mask
-    torchvision.utils.save_image(masked_image, f'./mask_data/mask{n}.png')
+    torchvision.utils.save_image(masked_image, f'./image_data/10000_msk.png')
 
     return mask, masked_image
 
@@ -119,9 +119,9 @@ def matched_mask(text, mask_dir, train_transforms_resize_and_crop):
     full_array = np.ones((512,512), dtype='uint8') * 255
     full_array[y_idx:y_idx2, :] = mask_array[y_idx:y_idx2, :]
     mask = Image.fromarray(full_array)
-    mask.save(file_name.split("/")[-1])
+    ImageOps.invert(mask).save('./image_data/' + file_name.split("/")[-1])
 
-    return train_transforms_resize_and_crop(mask)
+    return train_transforms_resize_and_crop(ImageOps.invert(mask))
 
 
 def parse_args(input_args=None):
