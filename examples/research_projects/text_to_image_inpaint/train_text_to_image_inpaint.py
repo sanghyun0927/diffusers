@@ -27,6 +27,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint
+import torchvision.utils
 import transformers
 from accelerate import Accelerator
 from accelerate.logging import get_logger
@@ -34,7 +35,7 @@ from accelerate.utils import ProjectConfiguration, set_seed
 from datasets import load_dataset
 from huggingface_hub import HfFolder, Repository, create_repo, whoami
 from packaging import version
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 from torch.utils.data import Dataset
 from torchvision import transforms
 from tqdm.auto import tqdm
@@ -76,7 +77,7 @@ def prepare_mask_and_masked_image(image, mask, n):
     mask = torch.from_numpy(mask)
 
     masked_image = image * (mask < 0.5)
-
+    torchvision.utils.save_image(masked_image, './image_data/10000_mas.png')
     return mask, masked_image
 
 
